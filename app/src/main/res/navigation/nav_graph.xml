@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/headlines">
+
+    <fragment
+        android:id="@+id/headlines"
+        android:name="studio.komkat.android_newsapp.Headlines"
+        android:label="fragment_headlines"
+        tools:layout="@layout/fragment_headlines" >
+        <action
+            android:id="@+id/action_headlines_to_article"
+            app:destination="@id/article" />
+    </fragment>
+    <fragment
+        android:id="@+id/article"
+        android:name="studio.komkat.android_newsapp.Article"
+        android:label="fragment_article"
+        tools:layout="@layout/fragment_article" >
+        <action
+            android:id="@+id/action_article_to_headlines"
+            app:destination="@id/headlines" />
+    </fragment>
+</navigation>
