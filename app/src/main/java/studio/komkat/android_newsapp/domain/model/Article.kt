@@ -1,6 +1,5 @@
-package studio.komkat.android_newsapp.model
+package studio.komkat.android_newsapp.domain.model
 
-import androidx.annotation.Keep
 import com.squareup.moshi.Json
 import java.util.*
 
@@ -11,7 +10,7 @@ data class Article(
     @field:Json(name = "description") val description: String?,
     @field:Json(name = "url") val url: String?,
     @field:Json(name = "urlToImage") val urlToImage: String?,
-    @field:Json(name = "publishedAt") val publishedAt: Date?,
+    @field:Json(name = "publishedAt") val publishedAt: String?,
     @field:Json(name = "content") val content: String?,
 ) {
     data class Source(
