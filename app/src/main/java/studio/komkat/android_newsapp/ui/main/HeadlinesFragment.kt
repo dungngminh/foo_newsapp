@@ -5,29 +5,50 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.jakewharton.rxrelay3.BehaviorRelay
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.kotlin.subscribeBy
+import studio.komkat.android_newsapp.Locator
 import studio.komkat.android_newsapp.R
+import studio.komkat.android_newsapp.Result
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [HeadlinesFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class HeadlinesFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private val onStopCompositeDisposable = CompositeDisposable()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    private val vm: HeadlinesVM by viewModels<HeadlinesVM>(factoryProducer = {
+        object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
+                return if (modelClass == HeadlinesVM::class.java) {
+                    @Suppress("UNCHECKED_CAST")
+                    HeadlinesVM(articleRepository = Locator.provideArticleRepository())  as T
+                } else {
+                    throw IllegalArgumentException("Unknown class $modelClass")
+                }
+            }
         }
+    })
+
+    // Access on Main thread
+    private val homeAdapter by lazy(LazyThreadSafetyMode.NONE) {
+        HomeAdapter(
+            onPressed = {
+                findNavController().navigate(
+                    HeadlinesFragmentDirections.actionHeadlinesToArticle(
+                        title = it.title ?: ""
+                    )
+                )
+                // navigate to ...
+            }
+        )
     }
 
     override fun onCreateView(
@@ -38,23 +59,46 @@ class HeadlinesFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_headlines, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment Headlines.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            HeadlinesFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        requireView().findViewById<RecyclerView>(R.id.recyclerView).run {
+            setHasFixedSize(true)
+            layoutManager = GridLayoutManager(context, 2)
+            adapter = homeAdapter
+        }
+
+        vm.getTopHeadlines()
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        vm.articlesResultObservable
+            .subscribeBy(
+                onNext =  { result ->
+                    when(result){
+                        is Result.Error -> {
+                            // show error
+                            // hide loading
+                        }
+                        Result.Loading -> {
+                            // show loading
+                            // hide error
+                        }
+                        is Result.Success -> {
+                            // hide loading, hide error
+                            // show data
+                            homeAdapter.submitList(result.data)
+                        }
+                    }
                 }
-            }
+            )
+            .addTo(onStopCompositeDisposable)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        onStopCompositeDisposable.dispose()
     }
 }

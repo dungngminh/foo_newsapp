@@ -13,7 +13,7 @@
         <entry key="app/src/main/res/layout/content_main.xml" value="0.35625" />
         <entry key="app/src/main/res/layout/fragment_article.xml" value="0.35597826086956524" />
         <entry key="app/src/main/res/layout/fragment_first.xml" value="0.35625" />
-        <entry key="app/src/main/res/layout/fragment_headlines.xml" value="0.35597826086956524" />
+        <entry key="app/src/main/res/layout/fragment_headlines.xml" value="0.1" />
         <entry key="app/src/main/res/layout/fragment_second.xml" value="0.35625" />
         <entry key="app/src/main/res/layout/tool_bar.xml" value="0.33" />
       </map>
